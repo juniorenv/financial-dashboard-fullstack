@@ -7,3 +7,41 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Payable {
+  id          String        @id @default(uuid())
+  supplier    String
+  description String?
+  amount      Decimal       @db.Decimal(10, 2)
+  dueDate     DateTime      @map("due_date") @db.Date
+  category    String?
+  status      PayableStatus @default(PENDING)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("payables")
+}
+
+model Receivable {
+  id          String           @id @default(uuid())
+  client      String
+  description String?
+  amount      Decimal          @db.Decimal(10, 2)
+  dueDate     DateTime         @map("due_date") @db.Date
+  category    String?
+  status      ReceivableStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("receivables")
+}
+
+enum PayableStatus {
+  PENDING
+  PAID
+}
+
+enum ReceivableStatus {
+  PENDING
+  RECEIVED
+}
