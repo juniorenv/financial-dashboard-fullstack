@@ -59,10 +59,7 @@ export class PayablesService {
         data: { status: PayableStatus.PAID },
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
+      if (this.isPrismaNotFound(error)) {
         const payable = await this.prismaService.payable.findUnique({
           where: { id },
         });
