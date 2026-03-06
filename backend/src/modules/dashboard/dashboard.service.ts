@@ -10,6 +10,7 @@ import {
   PayablesVsReceivablesDto,
 } from './dto/dashboard-response.dto';
 import { CashFlowRawRow } from './interfaces/cash-flow-raw-row.interface';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class DashboardService {
@@ -63,22 +64,28 @@ export class DashboardService {
         }),
       ]);
 
-    const totalPayable = Number(payableAgg._sum.amount ?? 0);
-    const totalReceivable = Number(receivableAgg._sum.amount ?? 0);
+    // 1. Pega os valores como instâncias do Decimal.js (ou 0 se for nulo)
+    const rawPayable = payableAgg._sum.amount ?? new Prisma.Decimal(0);
+    const rawReceivable = receivableAgg._sum.amount ?? new Prisma.Decimal(0);
+
+    // 2. Faz as contas com precisão usando os métodos da biblioteca
+    const calcPending = rawPayable.plus(rawReceivable);
+    const calcProjected = rawReceivable.minus(rawPayable);
 
     /**
-    Retorna um objeto com:
-        Total a Pagar
-        Total a Receber
-        Total Pendente
-        Saldo Projetado
-        Contas Vencidas
+    3. Converte para número primitivo apenas para o envio do JSON
+      Retorna um objeto com:
+          Total a Pagar
+          Total a Receber
+          Total Pendente
+          Saldo Projetado
+          Contas Vencidas
     */
     return {
-      totalPayable,
-      totalReceivable,
-      totalPending: totalPayable + totalReceivable,
-      projectedBalance: totalReceivable - totalPayable,
+      totalPayable: rawPayable.toNumber(),
+      totalReceivable: rawReceivable.toNumber(),
+      totalPending: calcPending.toNumber(),
+      projectedBalance: calcProjected.toNumber(),
       overdueCount: overduePayables + overdueReceivables,
     };
   }
