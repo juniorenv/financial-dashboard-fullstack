@@ -28,38 +28,39 @@ export class DashboardService {
     return { kpis, payablesVsReceivables, categoryDistribution, cashFlow };
   }
 
+  private getToday(tz = 'America/Sao_Paulo'): Date {
+    // 'en-CA' → formato YYYY-MM-DD
+    const localDateStr = new Date().toLocaleDateString('en-CA', {
+      timeZone: tz,
+    });
+    return new Date(`${localDateStr}T00:00:00.000Z`);
+  }
+
   // ─── KPIs ─────────────────────────────────────────────────────────────────
 
   private async getKpis(): Promise<DashboardKpisDto> {
-    const today = new Date();
+    const today = this.getToday();
 
     const [payableAgg, receivableAgg, overduePayables, overdueReceivables] =
       await Promise.all([
-        // Soma de todos os payables PENDING
         this.prismaService.payable.aggregate({
           _sum: { amount: true },
           where: { status: PayableStatus.PENDING },
         }),
-
-        // Soma de todos os receivables PENDING
         this.prismaService.receivable.aggregate({
           _sum: { amount: true },
           where: { status: ReceivableStatus.PENDING },
         }),
-
-        // Contagem de payables vencidos
         this.prismaService.payable.count({
           where: {
             status: PayableStatus.PENDING,
-            dueDate: { lt: today },
+            dueDate: { lte: today },
           },
         }),
-
-        // Contagem de receivables vencidos
         this.prismaService.receivable.count({
           where: {
             status: ReceivableStatus.PENDING,
-            dueDate: { lt: today },
+            dueDate: { lte: today },
           },
         }),
       ]);
