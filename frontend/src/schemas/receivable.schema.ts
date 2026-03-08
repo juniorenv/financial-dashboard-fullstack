@@ -28,8 +28,17 @@ export const createReceivableSchema = z.object({
     .string({ error: "Valor é obrigatório." })
     .min(1, "Valor é obrigatório.")
     .refine(
-      (val) => !isNaN(Number(val.replace(",", "."))) && Number(val.replace(",", ".")) > 0,
-      { message: "Informe um valor maior que zero." },
+      (val) => {
+        const normalized = val.replace(",", ".");
+        const num = Number(normalized);
+        if (isNaN(num) || num <= 0) return false;
+        if (num > 99_999_999.99) return false;
+        // Verifica casas decimais — pega o que vier após o ponto/vírgula
+        const decimals = normalized.split(".")[1];
+        if (decimals && decimals.length > 2) return false;
+        return true;
+      },
+      { message: "Informe um valor válido (máx. R$ 99.999.999,99 com até 2 casas decimais)." },
     ),
 
   dueDate: z
