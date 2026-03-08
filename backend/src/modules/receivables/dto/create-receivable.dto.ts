@@ -7,6 +7,7 @@ import {
   IsDate,
   MaxLength,
   IsEnum,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ReceivableStatus } from 'src/generated/prisma/enums';
@@ -26,6 +27,7 @@ export class CreateReceivableDto {
     { message: 'Valor deve ser numérico com até 2 casas decimais' },
   )
   @IsPositive({ message: 'Valor deve ser positivo' })
+  @Max(99_999_999.99, { message: 'Valor máximo permitido é R$ 99.999.999,99' })
   @Type(() => Number)
   amount!: number;
 
