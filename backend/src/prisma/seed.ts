@@ -1,7 +1,10 @@
-import 'dotenv/config';
+import path from 'path';
+import dotenv from 'dotenv';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from 'src/generated/prisma/client';
 import { PayableStatus, ReceivableStatus } from 'src/generated/prisma/enums';
+
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
 // ─── Cliente Prisma isolado para o seed ───────────────────────────────────────
 
