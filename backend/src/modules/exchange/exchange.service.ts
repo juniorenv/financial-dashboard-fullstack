@@ -38,7 +38,9 @@ export class ExchangeService implements OnModuleInit {
   @Cron(CronExpression.EVERY_30_SECONDS)
   public async refreshRate() {
     try {
-      const url = this.configService.getOrThrow<string>('EXCHANGE_API_URL');
+      const baseUrl = this.configService.getOrThrow<string>('EXCHANGE_API_URL');
+      const apiKey = this.configService.get<string>('EXCHANGE_API_KEY');
+      const url = apiKey ? `${baseUrl}?token=${apiKey}` : baseUrl;
 
       const response = await firstValueFrom(
         this.httpService.get<AwesomeApiResponse>(url),
