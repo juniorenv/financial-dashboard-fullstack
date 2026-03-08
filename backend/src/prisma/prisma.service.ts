@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import path from 'path';
+import dotenv from 'dotenv';
 import {
   Injectable,
   Logger,
@@ -7,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from 'src/generated/prisma/client';
+
+dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
 
 @Injectable()
 export class PrismaService
