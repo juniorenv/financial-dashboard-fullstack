@@ -9,17 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReceivablesIndexRouteImport } from './routes/receivables/index'
 import { Route as PayablesIndexRouteImport } from './routes/payables/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,14 +37,12 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/payables/': typeof PayablesIndexRoute
   '/receivables/': typeof ReceivablesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/dashboard': typeof DashboardIndexRoute
   '/payables': typeof PayablesIndexRoute
   '/receivables': typeof ReceivablesIndexRoute
@@ -58,28 +50,20 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/payables/': typeof PayablesIndexRoute
   '/receivables/': typeof ReceivablesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/dashboard/' | '/payables/' | '/receivables/'
+  fullPaths: '/' | '/dashboard/' | '/payables/' | '/receivables/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/dashboard' | '/payables' | '/receivables'
-  id:
-    | '__root__'
-    | '/'
-    | '/about'
-    | '/dashboard/'
-    | '/payables/'
-    | '/receivables/'
+  to: '/' | '/dashboard' | '/payables' | '/receivables'
+  id: '__root__' | '/' | '/dashboard/' | '/payables/' | '/receivables/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   PayablesIndexRoute: typeof PayablesIndexRoute
   ReceivablesIndexRoute: typeof ReceivablesIndexRoute
@@ -87,13 +71,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -127,7 +104,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   PayablesIndexRoute: PayablesIndexRoute,
   ReceivablesIndexRoute: ReceivablesIndexRoute,
