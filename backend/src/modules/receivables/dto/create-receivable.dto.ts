@@ -6,8 +6,10 @@ import {
   IsPositive,
   IsDate,
   MaxLength,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ReceivableStatus } from 'src/generated/prisma/enums';
 
 export class CreateReceivableDto {
   @IsString()
@@ -36,4 +38,8 @@ export class CreateReceivableDto {
   @IsOptional()
   @MaxLength(100)
   category?: string;
+
+  @IsEnum(ReceivableStatus, { message: 'Status deve ser PENDING ou RECEIVED' })
+  @IsOptional()
+  status?: ReceivableStatus;
 }

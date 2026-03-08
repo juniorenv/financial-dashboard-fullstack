@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from 'src/generated/prisma/client';
-import { ReceivableStatus } from 'src/generated/prisma/enums';
+import { PayableStatus, ReceivableStatus } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateReceivableDto } from './dto/create-receivable.dto';
 import { UpdateReceivableDto } from './dto/update-receivable.dto';
@@ -34,7 +34,18 @@ export class ReceivablesService {
   }
 
   public create(dto: CreateReceivableDto) {
-    return this.prismaService.receivable.create({ data: dto });
+    const { client, amount, dueDate, description, category, status } = dto;
+
+    return this.prismaService.receivable.create({
+      data: {
+        client,
+        amount,
+        dueDate,
+        description,
+        category,
+        status: status ?? PayableStatus.PENDING,
+      },
+    });
   }
 
   public async update(id: string, dto: UpdateReceivableDto) {

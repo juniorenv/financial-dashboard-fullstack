@@ -6,8 +6,10 @@ import {
   MaxLength,
   IsPositive,
   IsDate,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { PayableStatus } from 'src/generated/prisma/enums';
 
 export class CreatePayableDto {
   @IsString()
@@ -36,4 +38,8 @@ export class CreatePayableDto {
   @IsOptional()
   @MaxLength(100)
   category?: string;
+
+  @IsEnum(PayableStatus, { message: 'Status deve ser PENDING ou PAID' })
+  @IsOptional()
+  status?: PayableStatus = PayableStatus.PENDING;
 }

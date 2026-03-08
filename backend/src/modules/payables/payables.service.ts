@@ -30,7 +30,18 @@ export class PayablesService {
   }
 
   public create(dto: CreatePayableDto) {
-    return this.prismaService.payable.create({ data: dto });
+    const { supplier, amount, dueDate, description, category, status } = dto;
+
+    return this.prismaService.payable.create({
+      data: {
+        supplier,
+        amount,
+        dueDate,
+        description,
+        category,
+        status: status ?? PayableStatus.PENDING,
+      },
+    });
   }
 
   public async update(id: string, dto: UpdatePayableDto) {
