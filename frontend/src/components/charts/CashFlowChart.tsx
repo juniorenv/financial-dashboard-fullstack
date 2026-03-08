@@ -39,7 +39,7 @@ export function CashFlowChart({ data }: Props) {
         <YAxis
           tickFormatter={(value) => formatCurrency(Number(value))}
           stroke="#94a3b8"
-          width={110}
+          width={120}
         />
         <Tooltip
           formatter={(value: number) => formatCurrency(value)}
