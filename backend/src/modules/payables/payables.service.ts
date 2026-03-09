@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePayableDto } from './dto/create-payable.dto';
 import { UpdatePayableDto } from './dto/update-payable.dto';
 import { PayableStatus } from 'src/generated/prisma/enums';
-import { Prisma } from 'src/generated/prisma/client';
+import { isPrismaNotFound } from 'src/common/prisma-error.util';
 
 @Injectable()
 export class PayablesService {
@@ -51,7 +51,7 @@ export class PayablesService {
         data: dto,
       });
     } catch (error) {
-      if (this.isPrismaNotFound(error)) {
+      if (isPrismaNotFound(error)) {
         throw new NotFoundException(
           `Conta a pagar com id ${id} não encontrada`,
         );
@@ -70,7 +70,7 @@ export class PayablesService {
         data: { status: PayableStatus.PAID },
       });
     } catch (error) {
-      if (this.isPrismaNotFound(error)) {
+      if (isPrismaNotFound(error)) {
         const payable = await this.prismaService.payable.findUnique({
           where: { id },
         });
@@ -94,18 +94,12 @@ export class PayablesService {
     try {
       return await this.prismaService.payable.delete({ where: { id } });
     } catch (error) {
-      if (this.isPrismaNotFound(error)) {
+      if (isPrismaNotFound(error)) {
         throw new NotFoundException(
           `Conta a pagar com id ${id} não encontrada`,
         );
       }
       throw error;
     }
-  }
-
-  private isPrismaNotFound(e: unknown): boolean {
-    return (
-      e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025'
-    );
   }
 }

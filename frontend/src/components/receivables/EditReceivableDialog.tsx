@@ -92,7 +92,7 @@ export function EditReceivableDialog({ receivable, open, onClose }: Props) {
           <DialogTitle>Editar conta a receber</DialogTitle>
           <DialogDescription>
             Atualize os dados da receita de{" "}
-            <span className="font-medium text-slate-200">{receivable.client}</span>.
+            <span className="font-medium text-emerald-400">{receivable.client}</span>.
           </DialogDescription>
         </DialogHeader>
 

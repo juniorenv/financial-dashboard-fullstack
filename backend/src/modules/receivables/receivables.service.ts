@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from 'src/generated/prisma/client';
 import { PayableStatus, ReceivableStatus } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateReceivableDto } from './dto/create-receivable.dto';
 import { UpdateReceivableDto } from './dto/update-receivable.dto';
+import { isPrismaNotFound } from 'src/common/prisma-error.util';
 
 @Injectable()
 export class ReceivablesService {
@@ -55,7 +55,7 @@ export class ReceivablesService {
         data: dto,
       });
     } catch (error) {
-      if (this.isPrismaNotFound(error)) {
+      if (isPrismaNotFound(error)) {
         throw new NotFoundException(
           `Conta a receber com id ${id} não encontrada`,
         );
@@ -74,7 +74,7 @@ export class ReceivablesService {
         data: { status: ReceivableStatus.RECEIVED },
       });
     } catch (error) {
-      if (this.isPrismaNotFound(error)) {
+      if (isPrismaNotFound(error)) {
         const receivable = await this.prismaService.receivable.findUnique({
           where: { id },
         });
@@ -97,18 +97,12 @@ export class ReceivablesService {
     try {
       return await this.prismaService.receivable.delete({ where: { id } });
     } catch (error) {
-      if (this.isPrismaNotFound(error)) {
+      if (isPrismaNotFound(error)) {
         throw new NotFoundException(
           `Conta a receber com id ${id} não encontrada`,
         );
       }
       throw error;
     }
-  }
-
-  private isPrismaNotFound(e: unknown): boolean {
-    return (
-      e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025'
-    );
   }
 }
