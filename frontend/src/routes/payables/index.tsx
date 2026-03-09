@@ -12,7 +12,7 @@ import {
 import { formatCurrency, formatDate, isOverdue } from "@/lib/utils";
 import type { Payable } from "@/schemas/payable.schema";
 import { CreatePayableDialog } from "#/components/payables/CreatePayableDialog";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EditPayableDialog } from "@/components/payables/EditPayableDialog";
 
 export const Route = createFileRoute("/payables/")({
@@ -20,12 +20,43 @@ export const Route = createFileRoute("/payables/")({
 });
 
 function PayablesPage() {
+  // ── Queries & mutations ──────────────────────────────────────────────────
   const { data, isLoading, isFetching, refetch } = usePayables();
-  const { totalPending, totalPaid, countPending, countOverdue } = usePayablesSummary(data);
   const markAsPaid = useMarkAsPaid();
   const remove = useRemovePayable();
-  const [editingPayable, setEditingPayable] = useState<Payable | null>(null);
 
+  // ── Estado local ─────────────────────────────────────────────────────────
+  const [editingPayable, setEditingPayable] = useState<Payable | null>(null);
+  const [filterMonth, setFilterMonth] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'PENDING' | 'PAID'>('ALL');
+
+  // ── Dados derivados ───────────────────────────────────────────────────────
+  const monthOptions = useMemo(() => {
+    if (!data) return []
+    const months = [...new Set(data.map((item) => item.dueDate.slice(0, 7)))]
+    return months.sort().reverse()
+  }, [data])
+
+  // Reseta o filtro de mês se o mês selecionado não existe mais nos dados
+  useEffect(() => {
+    if (filterMonth && !monthOptions.includes(filterMonth)) {
+      setFilterMonth('');
+      setFilterStatus('ALL');
+    }
+  }, [monthOptions, filterMonth])
+
+  const filteredData = useMemo(() => {
+    if (!data) return []
+    return data.filter((item) => {
+      const matchMonth = filterMonth ? item.dueDate.slice(0, 7) === filterMonth : true
+      const matchStatus = filterStatus === 'ALL' ? true : item.status === filterStatus
+      return matchMonth && matchStatus
+    })
+  }, [data, filterMonth, filterStatus])
+
+  const { totalPending, totalPaid, countPending, countOverdue } = usePayablesSummary(filteredData);
+
+  // ── Computed simples ──────────────────────────────────────────────────────
   // 1. Combined busy state: True se estiver carregando inicialmente, atualizando ou mutacionando
   const isGlobalBusy = isFetching || markAsPaid.isPending || remove.isPending;
 
@@ -80,7 +111,46 @@ function PayablesPage() {
           <h2 className="text-sm font-semibold text-slate-200">
             Contas cadastradas
           </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Filtro de mês */}
+            <select
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="h-8 rounded-md border border-slate-700 bg-slate-900 px-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              <option value="">Todos os meses</option>
+              {monthOptions.map((month) => (
+                <option key={month} value={month}>
+                  {new Date(month + '-02').toLocaleDateString('pt-BR', {
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </option>
+              ))}
+            </select>
 
+            {/* Filtro de status */}
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+              className="h-8 rounded-md border border-slate-700 bg-slate-900 px-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              <option value="ALL">Todos os status</option>
+              <option value="PENDING">Pendente</option>
+              <option value="PAID">Pago</option>
+            </select>
+
+            {/* Limpar filtros — só aparece quando algum filtro está ativo */}
+            {(filterMonth || filterStatus !== 'ALL') && (
+              <button
+                type="button"
+                onClick={() => { setFilterMonth(''); setFilterStatus('ALL') }}
+                className="text-xs text-slate-400 hover:text-slate-200 underline"
+              >
+                Limpar filtros
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -134,7 +204,15 @@ function PayablesPage() {
                 </TR>
               )}
 
-              {data?.map((item) => (
+              {!isLoading && filteredData.length === 0 && (data?.length ?? 0) > 0 && (
+                <TR>
+                  <TD colSpan={6} className="py-8 text-center text-sm text-slate-400">
+                    Nenhuma conta encontrada para os filtros selecionados.
+                  </TD>
+                </TR>
+              )}
+
+              {filteredData?.map((item) => (
                 <PayableRow
                   key={item.id}
                   item={item}
