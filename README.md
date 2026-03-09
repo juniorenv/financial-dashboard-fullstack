@@ -37,11 +37,11 @@
 <p align="center">
   <a href="#-sobre-o-projeto">Sobre</a> •
   <a href="#-funcionalidades">Funcionalidades</a> •
-  <a href="#-screenshots">Screenshots</a> •
-  <a href="#-arquitetura">Arquitetura</a> •
-  <a href="#-como-rodar">Como rodar</a> •
-  <a href="#-endpoints-da-api">API</a> •
-  <a href="#-variáveis-de-ambiente">Variáveis de ambiente</a>
+  <a href="#screenshots">Screenshots</a> •
+  <a href="#arquitetura">Arquitetura</a> •
+  <a href="#como-rodar">Como rodar</a> •
+  <a href="#endpoints-da-api">API</a> •
+  <a href="#variáveis-de-ambiente">Variáveis de ambiente</a>
 </p>
 
 ---
@@ -305,6 +305,45 @@ Base URL: `/api`
     "statusCode": 404
 }
 ```
+---
+
+## Validação de dados
+
+### Backend
+
+O backend utiliza `class-validator` e `class-transformer` para validar todos os dados recebidos via `ValidationPipe` global com `whitelist: true` — campos não declarados nos DTOs são automaticamente rejeitados.
+
+Exemplos de validação no payload:
+
+| Campo | Regras |
+|-------|--------|
+| `supplier` / `client` | Obrigatório, string, máx. 255 caracteres |
+| `amount` | Obrigatório, numérico, positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
+| `dueDate` | Obrigatório, data válida |
+| `category` | Opcional, string, máx. 100 caracteres |
+| `description` | Opcional, string, máx. 255 caracteres |
+| `status` | Opcional, enum — `PENDING \| PAID` ou `PENDING \| RECEIVED` |
+
+Exemplo de resposta para payload inválido (`400 Bad Request`):
+```json
+{
+  "message": [
+    "Valor deve ser positivo",
+    "Data de vencimento é obrigatória"
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+### Frontend
+
+O frontend utiliza **Zod** + **React Hook Form** para validação em tempo real antes do envio, com feedback visual por campo:
+
+- Valor: obrigatório, numérico, positivo, máx. 2 casas decimais, máx. `R$ 99.999.999,99`
+- Data de vencimento: obrigatória, formato `YYYY-MM-DD`
+- Fornecedor/Cliente: obrigatório, entre 2 e 100 caracteres
+- Categoria e descrição: opcionais, com limite de caracteres
 
 ---
 
