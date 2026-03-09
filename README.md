@@ -309,20 +309,31 @@ Base URL: `/api`
 
 ## Validação de dados
 
-### Backend
+O backend utiliza `class-validator` e `class-transformer` com `ValidationPipe` global (`whitelist: true`) — campos não declarados nos DTOs são automaticamente rejeitados.
 
-O backend utiliza `class-validator` e `class-transformer` para validar todos os dados recebidos via `ValidationPipe` global com `whitelist: true` — campos não declarados nos DTOs são automaticamente rejeitados.
+### DTOs
 
-Exemplos de validação no payload:
+**Contas a Pagar (`CreatePayableDto`)**
 
-| Campo | Regras |
-|-------|--------|
-| `supplier` / `client` | Obrigatório, string, máx. 255 caracteres |
-| `amount` | Obrigatório, numérico, positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
-| `dueDate` | Obrigatório, data válida |
-| `category` | Opcional, string, máx. 100 caracteres |
-| `description` | Opcional, string, máx. 255 caracteres |
-| `status` | Opcional, enum — `PENDING \| PAID` ou `PENDING \| RECEIVED` |
+| Campo | Tipo | Obrigatório | Regras |
+|-------|------|-------------|--------|
+| `supplier` | string | ✅ | Máx. 255 caracteres |
+| `amount` | number | ✅ | Positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
+| `dueDate` | date | ✅ | Data válida |
+| `category` | string | ❌ | Máx. 100 caracteres |
+| `description` | string | ❌ | Sem limite definido |
+| `status` | enum | ❌ | `PENDING` \| `PAID` — default `PENDING` |
+
+**Contas a Receber (`CreateReceivableDto`)**
+
+| Campo | Tipo | Obrigatório | Regras |
+|-------|------|-------------|--------|
+| `client` | string | ✅ | Máx. 255 caracteres |
+| `amount` | number | ✅ | Positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
+| `dueDate` | date | ✅ | Data válida |
+| `category` | string | ❌ | Máx. 100 caracteres |
+| `description` | string | ❌ | Sem limite definido |
+| `status` | enum | ❌ | `PENDING` \| `RECEIVED` — default `PENDING` |
 
 Exemplo de resposta para payload inválido (`400 Bad Request`):
 ```json
@@ -335,7 +346,6 @@ Exemplo de resposta para payload inválido (`400 Bad Request`):
   "statusCode": 400
 }
 ```
-
 ### Frontend
 
 O frontend utiliza **Zod** + **React Hook Form** para validação em tempo real antes do envio, com feedback visual por campo:
