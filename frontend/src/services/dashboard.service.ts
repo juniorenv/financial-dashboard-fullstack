@@ -27,9 +27,14 @@ export interface DashboardCategoryDistribution {
 
 export interface DashboardCashFlowItem {
   month: string
-  income: number
-  expenses: number
-  balance: number
+  // ── Realizado ──────────────────────────────────────────────────────────────
+  income: number           // receivables RECEIVED
+  expenses: number         // payables PAID
+  balance: number          // income - expenses
+  // ── Projetado (todas as contas, independente de status) ───────────────────
+  projectedIncome: number
+  projectedExpenses: number
+  projectedBalance: number
 }
 
 export interface DashboardResponse {
@@ -42,4 +47,3 @@ export interface DashboardResponse {
 export const dashboardService = {
   getSummary: () => api.get<DashboardResponse>("/dashboard"),
 };
-
