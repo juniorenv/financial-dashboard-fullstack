@@ -1,5 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
+import { faker } from '@faker-js/faker/locale/pt_BR';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from 'src/generated/prisma/client';
 import { PayableStatus, ReceivableStatus } from 'src/generated/prisma/enums';
@@ -13,42 +14,6 @@ const prisma = new PrismaClient({ adapter });
 
 // ─── Dados de referência ──────────────────────────────────────────────────────
 
-const FORNECEDORES = [
-  'Eletropaulo Energia',
-  'Sabesp',
-  'Claro Empresas',
-  'Vivo Fibra',
-  'Correios',
-  'Localfrio Refrigeração',
-  'Papelaria Central',
-  'TechSuprimentos Ltda',
-  'Limpeza Total Serviços',
-  'Gráfica Rápida',
-  'Contabilidade Souza & Filhos',
-  'Advocacia Mendes Associados',
-  'Seguradora Porto Alegre',
-  'Locadora de Veículos Movida',
-  'Café & Cia Distribuidora',
-];
-
-const CLIENTES = [
-  'Construtora Horizonte',
-  'Supermercado Estrela',
-  'Clínica Vida Saudável',
-  'Escola Aprender Mais',
-  'Restaurante Sabor & Arte',
-  'Academia FitLife',
-  'Farmácia São João',
-  'Auto Peças Roda Viva',
-  'Imobiliária Morar Bem',
-  'Transportadora Caminho Certo',
-  'Padaria Pão Quente',
-  'Pet Shop Amigo Fiel',
-  'Salão Beleza Única',
-  'Escritório Contábil Oliveira',
-  'Distribuidora Norte Sul',
-];
-
 const CATEGORIAS_PAGAR = [
   'Aluguel',
   'Energia Elétrica',
@@ -60,7 +25,7 @@ const CATEGORIAS_PAGAR = [
   'Manutenção',
   'Marketing',
   'Serviços Terceirizados',
-];
+] as const;
 
 const CATEGORIAS_RECEBER = [
   'Venda de Produtos',
@@ -71,98 +36,104 @@ const CATEGORIAS_RECEBER = [
   'Comissão',
   'Aluguel de Equipamentos',
   'Suporte Técnico',
-];
+] as const;
 
-const DESCRICOES_PAGAR: Record<string, string[]> = {
-  Aluguel: [
-    'Aluguel mensal da sede',
-    'Aluguel do galpão logístico',
-    'Aluguel sala comercial',
-  ],
-  'Energia Elétrica': [
-    'Conta de energia do escritório',
-    'Conta de energia do depósito',
-  ],
-  'Água e Saneamento': ['Conta de água mensal', 'Taxa de esgoto'],
-  'Telefone e Internet': [
-    'Plano corporativo de telefonia',
-    'Internet fibra óptica 500MB',
-  ],
-  'Folha de Pagamento': [
-    'Salários equipe administrativa',
-    'Salários equipe comercial',
-    'Pró-labore sócios',
-  ],
-  'Impostos e Tributos': [
-    'DAS Simples Nacional',
-    'IPTU sede',
-    'ISS mensal',
-    'FGTS competência',
-  ],
-  Fornecedores: [
-    'Reposição de estoque',
-    'Compra de insumos',
-    'Material de escritório',
-  ],
-  Manutenção: [
-    'Manutenção preventiva ar-condicionado',
-    'Reparo sistema elétrico',
-    'Manutenção frota',
-  ],
-  Marketing: [
-    'Campanha redes sociais',
-    'Impulsionamento Google Ads',
-    'Produção de conteúdo',
-  ],
-  'Serviços Terceirizados': [
-    'Serviço de limpeza mensal',
-    'Honorários contábeis',
-    'Assessoria jurídica',
-  ],
+type CategoriaPagar = (typeof CATEGORIAS_PAGAR)[number];
+type CategoriaReceber = (typeof CATEGORIAS_RECEBER)[number];
+
+// ─── Faixas de valor por categoria ───────────────────────────────────────────
+
+const FAIXAS_PAGAR: Record<CategoriaPagar, [number, number]> = {
+  Aluguel: [2500, 12000],
+  'Energia Elétrica': [300, 1800],
+  'Água e Saneamento': [150, 600],
+  'Telefone e Internet': [200, 800],
+  'Folha de Pagamento': [5000, 35000],
+  'Impostos e Tributos': [800, 8000],
+  Fornecedores: [1000, 20000],
+  Manutenção: [300, 3500],
+  Marketing: [500, 5000],
+  'Serviços Terceirizados': [600, 4000],
 };
 
-const DESCRICOES_RECEBER: Record<string, string[]> = {
-  'Venda de Produtos': [
-    'Venda de produtos linha premium',
-    'Pedido atacado mensal',
-    'Venda e-commerce',
-  ],
-  'Prestação de Serviços': [
-    'Serviço de instalação',
-    'Serviço de manutenção contratado',
-    'Serviço avulso',
-  ],
-  Consultoria: [
-    'Consultoria estratégica Q1',
-    'Projeto de reestruturação',
-    'Diagnóstico empresarial',
-  ],
-  Licenciamento: ['Licença anual de software', 'Licença de uso da plataforma'],
-  Mensalidade: [
-    'Mensalidade plano básico',
-    'Mensalidade plano empresarial',
-    'Mensalidade plano premium',
-  ],
-  Comissão: ['Comissão sobre vendas março', 'Comissão parceiro comercial'],
-  'Aluguel de Equipamentos': [
-    'Locação de impressoras',
-    'Locação de equipamentos audiovisuais',
-  ],
-  'Suporte Técnico': ['Contrato de suporte mensal', 'Suporte técnico avulso'],
+const FAIXAS_RECEBER: Record<CategoriaReceber, [number, number]> = {
+  'Venda de Produtos': [1500, 30000],
+  'Prestação de Serviços': [800, 15000],
+  Consultoria: [2000, 20000],
+  Licenciamento: [500, 8000],
+  Mensalidade: [300, 5000],
+  Comissão: [400, 6000],
+  'Aluguel de Equipamentos': [600, 4000],
+  'Suporte Técnico': [500, 3000],
 };
+
+// ─── Descrições por categoria (geradas com Faker) ─────────────────────────────
+
+function descricaoPagar(categoria: CategoriaPagar): string {
+  const map: Record<CategoriaPagar, () => string> = {
+    Aluguel: () =>
+      `Aluguel ${faker.helpers.arrayElement(['mensal da sede', 'do galpão logístico', 'sala comercial'])}`,
+    'Energia Elétrica': () =>
+      `Conta de energia — ${faker.location.streetAddress()}`,
+    'Água e Saneamento': () =>
+      faker.helpers.arrayElement([
+        'Conta de água mensal',
+        'Taxa de esgoto e saneamento',
+      ]),
+    'Telefone e Internet': () =>
+      `${faker.company.buzzNoun()} — plano ${faker.helpers.arrayElement(['corporativo', 'empresarial', 'fibra 500MB'])}`,
+    'Folha de Pagamento': () =>
+      `Salários ${faker.helpers.arrayElement(['equipe administrativa', 'equipe comercial', 'equipe técnica'])} — ${faker.date.month()}`,
+    'Impostos e Tributos': () =>
+      faker.helpers.arrayElement([
+        'DAS Simples Nacional',
+        'IPTU sede',
+        'ISS mensal',
+        'FGTS competência',
+        'INSS folha',
+      ]),
+    Fornecedores: () =>
+      `${faker.helpers.arrayElement(['Reposição de estoque', 'Compra de insumos', 'Material de escritório'])} — ${faker.company.name()}`,
+    Manutenção: () =>
+      `${faker.helpers.arrayElement(['Manutenção preventiva', 'Reparo', 'Revisão'])} — ${faker.commerce.department()}`,
+    Marketing: () =>
+      `${faker.helpers.arrayElement(['Campanha', 'Impulsionamento', 'Produção de conteúdo'])} — ${faker.company.buzzPhrase()}`,
+    'Serviços Terceirizados': () =>
+      `${faker.helpers.arrayElement(['Serviço de limpeza', 'Honorários contábeis', 'Assessoria jurídica', 'Consultoria TI'])} — ${faker.date.month()}`,
+  };
+  return map[categoria]();
+}
+
+function descricaoReceber(categoria: CategoriaReceber): string {
+  const map: Record<CategoriaReceber, () => string> = {
+    'Venda de Produtos': () =>
+      `${faker.helpers.arrayElement(['Pedido', 'Venda', 'Fornecimento'])} — ${faker.commerce.productName()}`,
+    'Prestação de Serviços': () =>
+      `${faker.helpers.arrayElement(['Serviço de instalação', 'Serviço de manutenção', 'Execução de serviço'])} — ${faker.company.buzzVerb()}`,
+    Consultoria: () =>
+      `Consultoria ${faker.helpers.arrayElement(['estratégica', 'financeira', 'operacional', 'de TI'])} — ${faker.date.month()}`,
+    Licenciamento: () =>
+      `Licença ${faker.helpers.arrayElement(['anual', 'mensal', 'trimestral'])} — ${faker.commerce.productName()}`,
+    Mensalidade: () =>
+      `Mensalidade plano ${faker.helpers.arrayElement(['básico', 'intermediário', 'empresarial', 'premium'])} — ${faker.date.month()}`,
+    Comissão: () =>
+      `Comissão ${faker.helpers.arrayElement(['sobre vendas', 'parceiro comercial', 'indicação'])} — ${faker.date.month()}`,
+    'Aluguel de Equipamentos': () =>
+      `Locação de ${faker.helpers.arrayElement(['impressoras', 'equipamentos audiovisuais', 'servidores', 'câmeras'])}`,
+    'Suporte Técnico': () =>
+      `${faker.helpers.arrayElement(['Contrato de suporte', 'Atendimento técnico', 'Suporte remoto'])} — ${faker.date.month()}`,
+  };
+  return map[categoria]();
+}
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────
 
-function sortear<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
 function sortearInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return faker.number.int({ min, max });
 }
 
 function sortearValor(min: number, max: number): number {
-  return parseFloat((Math.random() * (max - min) + min).toFixed(2));
+  return faker.number.float({ min, max, fractionDigits: 2 });
 }
 
 /**
@@ -179,10 +150,8 @@ function gerarData(
   let mesesAtras: number;
 
   if (tendencia === 'passado') {
-    // Pesa para os meses mais antigos (3–12 meses atrás)
     mesesAtras = sortearInt(3, 12);
   } else if (tendencia === 'futuro') {
-    // Pesa para datas próximas ou futuras (-1 a 3 meses a partir de hoje)
     mesesAtras = sortearInt(-3, 1);
   } else {
     mesesAtras = sortearInt(-2, 11);
@@ -203,22 +172,26 @@ function definirStatusPagar(dueDate: Date): PayableStatus {
   const vencida = dueDate < new Date();
   if (vencida) {
     // 75% pagas, 25% inadimplentes (vencidas e ainda pendentes)
-    return Math.random() < 0.75 ? PayableStatus.PAID : PayableStatus.PENDING;
+    return faker.datatype.boolean({ probability: 0.75 })
+      ? PayableStatus.PAID
+      : PayableStatus.PENDING;
   }
   // Contas futuras: 15% já antecipadas, 85% pendentes
-  return Math.random() < 0.15 ? PayableStatus.PAID : PayableStatus.PENDING;
+  return faker.datatype.boolean({ probability: 0.15 })
+    ? PayableStatus.PAID
+    : PayableStatus.PENDING;
 }
 
 function definirStatusReceber(dueDate: Date): ReceivableStatus {
   const vencida = dueDate < new Date();
   if (vencida) {
     // 80% recebidas, 20% inadimplentes
-    return Math.random() < 0.8
+    return faker.datatype.boolean({ probability: 0.8 })
       ? ReceivableStatus.RECEIVED
       : ReceivableStatus.PENDING;
   }
   // Contas futuras: 10% já recebidas antecipadamente, 90% pendentes
-  return Math.random() < 0.1
+  return faker.datatype.boolean({ probability: 0.1 })
     ? ReceivableStatus.RECEIVED
     : ReceivableStatus.PENDING;
 }
@@ -227,29 +200,13 @@ function definirStatusReceber(dueDate: Date): ReceivableStatus {
 
 function gerarPayables() {
   return Array.from({ length: 100 }, () => {
-    const categoria = sortear(CATEGORIAS_PAGAR);
-    const descricoes = DESCRICOES_PAGAR[categoria];
+    const categoria = faker.helpers.arrayElement(CATEGORIAS_PAGAR);
     const dueDate = gerarData('uniforme');
-
-    // Valores realistas por categoria
-    const faixas: Record<string, [number, number]> = {
-      Aluguel: [2500, 12000],
-      'Energia Elétrica': [300, 1800],
-      'Água e Saneamento': [150, 600],
-      'Telefone e Internet': [200, 800],
-      'Folha de Pagamento': [5000, 35000],
-      'Impostos e Tributos': [800, 8000],
-      Fornecedores: [1000, 20000],
-      Manutenção: [300, 3500],
-      Marketing: [500, 5000],
-      'Serviços Terceirizados': [600, 4000],
-    };
-
-    const [min, max] = faixas[categoria] ?? [200, 5000];
+    const [min, max] = FAIXAS_PAGAR[categoria];
 
     return {
-      supplier: sortear(FORNECEDORES),
-      description: sortear(descricoes),
+      supplier: faker.company.name(),
+      description: descricaoPagar(categoria),
       amount: sortearValor(min, max),
       dueDate,
       category: categoria,
@@ -260,27 +217,13 @@ function gerarPayables() {
 
 function gerarReceivables() {
   return Array.from({ length: 100 }, () => {
-    const categoria = sortear(CATEGORIAS_RECEBER);
-    const descricoes = DESCRICOES_RECEBER[categoria];
+    const categoria = faker.helpers.arrayElement(CATEGORIAS_RECEBER);
     const dueDate = gerarData('uniforme');
-
-    // Receitas geralmente maiores que despesas unitárias
-    const faixas: Record<string, [number, number]> = {
-      'Venda de Produtos': [1500, 30000],
-      'Prestação de Serviços': [800, 15000],
-      Consultoria: [2000, 20000],
-      Licenciamento: [500, 8000],
-      Mensalidade: [300, 5000],
-      Comissão: [400, 6000],
-      'Aluguel de Equipamentos': [600, 4000],
-      'Suporte Técnico': [500, 3000],
-    };
-
-    const [min, max] = faixas[categoria] ?? [500, 10000];
+    const [min, max] = FAIXAS_RECEBER[categoria];
 
     return {
-      client: sortear(CLIENTES),
-      description: sortear(descricoes),
+      client: faker.company.name(),
+      description: descricaoReceber(categoria),
       amount: sortearValor(min, max),
       dueDate,
       category: categoria,
@@ -294,12 +237,10 @@ function gerarReceivables() {
 async function main() {
   console.log('🌱 Iniciando seed...\n');
 
-  // Limpa os dados existentes antes de repovoar
   await prisma.payable.deleteMany();
   await prisma.receivable.deleteMany();
   console.log('🗑️  Dados anteriores removidos');
 
-  // Payables
   const payables = gerarPayables();
   await prisma.payable.createMany({ data: payables });
 
@@ -309,7 +250,6 @@ async function main() {
     `✅ ${payables.length} contas a pagar criadas (${pagas} pagas | ${pendPag} pendentes)`,
   );
 
-  // Receivables
   const receivables = gerarReceivables();
   await prisma.receivable.createMany({ data: receivables });
 
