@@ -156,40 +156,63 @@ export class DashboardService {
 
   private async getCashFlow(): Promise<CashFlowDataPointDto[]> {
     /**
-     * $queryRaw com UNION ALL para buscar payables e receivables
-     * agrupados por mês em uma única query.
+     * Fluxo de caixa em duas visões — uma única query com UNION ALL:
      *
-     * Retorna as linhas ordenadas por mês, cobrindo os últimos 12 meses.
+     * Realizado:  receivables RECEIVED + payables PAID
+     * Projetado:  todas as receivables + todos os payables (sem filtro de status)
+     *
+     * Cobre os últimos 12 meses agrupados por mês.
      */
     const rows = await this.prismaService.$queryRaw<CashFlowRawRow[]>`
-      SELECT
-        TO_CHAR(due_date, 'YYYY-MM') AS month,
-        SUM(CASE WHEN type = 'income'   THEN amount ELSE 0 END) AS income,
-        SUM(CASE WHEN type = 'expenses' THEN amount ELSE 0 END) AS expenses
-      FROM (
-        SELECT due_date, amount, 'income' AS type
-        FROM receivables
-        WHERE due_date >= DATE_TRUNC('month', NOW()) - INTERVAL '11 months'
+    SELECT
+      TO_CHAR(due_date, 'YYYY-MM') AS month,
+      SUM(CASE WHEN type = 'income'            THEN amount ELSE 0 END) AS income,
+      SUM(CASE WHEN type = 'expenses'          THEN amount ELSE 0 END) AS expenses,
+      SUM(CASE WHEN type = 'proj_income'       THEN amount ELSE 0 END) AS projected_income,
+      SUM(CASE WHEN type = 'proj_expenses'     THEN amount ELSE 0 END) AS projected_expenses
+    FROM (
+      SELECT due_date, amount, 'income' AS type
+      FROM receivables
+      WHERE due_date >= DATE_TRUNC('month', NOW()) - INTERVAL '11 months'
+        AND status = 'RECEIVED'
 
-        UNION ALL
+      UNION ALL
 
-        SELECT due_date, amount, 'expenses' AS type
-        FROM payables
-        WHERE due_date >= DATE_TRUNC('month', NOW()) - INTERVAL '11 months'
-      ) AS combined
-      GROUP BY month
-      ORDER BY month ASC
-    `;
+      SELECT due_date, amount, 'expenses' AS type
+      FROM payables
+      WHERE due_date >= DATE_TRUNC('month', NOW()) - INTERVAL '11 months'
+        AND status = 'PAID'
+
+      UNION ALL
+
+      SELECT due_date, amount, 'proj_income' AS type
+      FROM receivables
+      WHERE due_date >= DATE_TRUNC('month', NOW()) - INTERVAL '11 months'
+
+      UNION ALL
+
+      SELECT due_date, amount, 'proj_expenses' AS type
+      FROM payables
+      WHERE due_date >= DATE_TRUNC('month', NOW()) - INTERVAL '11 months'
+    ) AS combined
+    GROUP BY month
+    ORDER BY month ASC
+  `;
 
     return rows.map((row) => {
       const income = Number(row.income);
       const expenses = Number(row.expenses);
+      const projectedIncome = Number(row.projected_income);
+      const projectedExpenses = Number(row.projected_expenses);
 
       return {
         month: row.month,
         income,
         expenses,
         balance: income - expenses,
+        projectedIncome,
+        projectedExpenses,
+        projectedBalance: projectedIncome - projectedExpenses,
       };
     });
   }

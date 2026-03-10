@@ -29,10 +29,13 @@ export interface CategoryDistributionDto {
 }
 
 export interface CashFlowDataPointDto {
-  month: string; // Formato: 'YYYY-MM'
-  income: number;
-  expenses: number;
-  balance: number;
+  month: string;
+  income: number; // RECEIVED
+  expenses: number; // PAID
+  balance: number; // income - expenses (realizado)
+  projectedIncome: number; // todas as receivables
+  projectedExpenses: number; // todas as payables
+  projectedBalance: number; // projectedIncome - projectedExpenses
 }
 
 export interface DashboardResponseDto {
