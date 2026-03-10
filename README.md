@@ -57,18 +57,21 @@ A cotação do dólar é atualizada automaticamente a cada 30 segundos via integ
 ## ✨ Funcionalidades
 
 ### Contas a Pagar
+
 - Cadastro, edição e exclusão de contas com fornecedor, valor, vencimento e categoria
 - Marcação de contas como **pagas** com um clique
 - Indicadores de contas **vencidas** e **pendentes**
 - Totais em aberto e pagos exibidos no cabeçalho da página
 
 ### Contas a Receber
+
 - Cadastro, edição e exclusão de receitas com cliente, valor, vencimento e categoria
 - Marcação de contas como **recebidas** com um clique
 - Indicadores de contas **vencidas** e **pendentes**
 - Totais a receber e já recebidos exibidos no cabeçalho da página
 
 ### Dashboard BI
+
 - **5 KPIs:** Total a receber, Total a pagar, Total pendente, Saldo projetado (BRL + USD) e Saldo realizado
 - **Gráfico de barras:** Comparativo entre contas pagas/recebidas vs pendentes
 - **Gráfico de donut:** Distribuição por categoria (alternável entre a pagar e a receber)
@@ -138,14 +141,14 @@ financial-dashboard-fullstack/
 
 ### Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Backend | NestJS 11, TypeScript, Prisma 7, PostgreSQL 17 |
-| Frontend | React 19, Vite 7, TanStack Router, TanStack Query |
-| UI | shadcn/ui, Tailwind CSS v4, Recharts |
-| Formulários | React Hook Form + Zod |
-| Infra | Docker, Docker Compose, nginx |
-| Câmbio | AwesomeAPI (polling a cada 30s com cache em memória) |
+| Camada      | Tecnologia                                           |
+| ----------- | ---------------------------------------------------- |
+| Backend     | NestJS 11, TypeScript, Prisma 7, PostgreSQL 17       |
+| Frontend    | React 19, Vite 7, TanStack Router, TanStack Query    |
+| UI          | shadcn/ui, Tailwind CSS v4, Recharts                 |
+| Formulários | React Hook Form + Zod                                |
+| Infra       | Docker, Docker Compose, nginx                        |
+| Câmbio      | AwesomeAPI (polling a cada 30s com cache em memória) |
 
 ---
 
@@ -185,9 +188,9 @@ Aguarde o healthcheck do PostgreSQL e as migrations automáticas do backend.
 
 **4. Acesse a aplicação**
 
-| Serviço | URL |
-|---------|-----|
-| Frontend | http://localhost |
+| Serviço       | URL                  |
+| ------------- | -------------------- |
+| Frontend      | http://localhost     |
 | Backend (API) | http://localhost/api |
 
 **5. Popular o banco com dados de exemplo (opcional)**
@@ -198,13 +201,14 @@ Após os serviços estarem rodando, execute em outro terminal:
 docker compose exec backend pnpm db:seed
 ```
 
-O seed insere 100 contas a pagar e 100 contas a receber com dados realistas distribuídos nos últimos 12 meses.
+O seed utiliza **Faker.js** com locale `pt_BR` para gerar 100 contas a pagar e 100 contas a receber com fornecedores, clientes e descrições únicos a cada execução, distribuídos nos últimos 12 meses.
 
 ---
 
 ### Sem Docker (desenvolvimento local)
 
 **1. Clone e configure o ambiente**
+
 ```bash
 git clone https://github.com/seu-usuario/financial-dashboard-fullstack.git
 cd financial-dashboard-fullstack
@@ -212,17 +216,20 @@ cp .env.example .env
 ```
 
 No `.env`, ajuste estas duas variáveis para usar `localhost` em vez do nome do serviço Docker:
+
 ```bash
 DATABASE_URL=postgresql://admin:secret@localhost:5432/financial_db
 FRONTEND_URL=http://localhost:5173
 ```
 
 **2. Suba apenas o PostgreSQL**
+
 ```bash
 docker compose up postgres -d
 ```
 
 **3. Configure e inicie o backend**
+
 ```bash
 cd backend
 pnpm install
@@ -240,6 +247,7 @@ pnpm start:dev
 **4. Configure e inicie o frontend**
 
 Em outro terminal, a partir da raiz do projeto:
+
 ```bash
 cd frontend
 pnpm install
@@ -250,16 +258,19 @@ pnpm dev
 
 **5. Acesse a aplicação**
 
-| Serviço | URL |
-|---------|-----|
-| Frontend | http://localhost:5173 |
+| Serviço       | URL                       |
+| ------------- | ------------------------- |
+| Frontend      | http://localhost:5173     |
 | Backend (API) | http://localhost:3000/api |
 
 **6. Popular o banco (opcional)**
+
 ```bash
 cd backend
 pnpm db:seed
 ```
+
+> Veja a descrição do seed na seção [Com Docker](#com-docker-recomendado).
 
 ---
 
@@ -269,42 +280,43 @@ Base URL: `/api`
 
 ### Contas a Pagar — `/api/payables`
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/payables` | Listar todas |
-| `GET` | `/payables/:id` | Buscar por ID |
-| `POST` | `/payables` | Criar |
-| `PUT` | `/payables/:id` | Editar |
-| `PATCH` | `/payables/:id/pay` | Marcar como pago |
-| `DELETE` | `/payables/:id` | Excluir |
+| Método   | Rota                | Descrição        |
+| -------- | ------------------- | ---------------- |
+| `GET`    | `/payables`         | Listar todas     |
+| `GET`    | `/payables/:id`     | Buscar por ID    |
+| `POST`   | `/payables`         | Criar            |
+| `PUT`    | `/payables/:id`     | Editar           |
+| `PATCH`  | `/payables/:id/pay` | Marcar como pago |
+| `DELETE` | `/payables/:id`     | Excluir          |
 
 ### Contas a Receber — `/api/receivables`
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/receivables` | Listar todas |
-| `GET` | `/receivables/:id` | Buscar por ID |
-| `POST` | `/receivables` | Criar |
-| `PUT` | `/receivables/:id` | Editar |
-| `PATCH` | `/receivables/:id/receive` | Marcar como recebido |
-| `DELETE` | `/receivables/:id` | Excluir |
+| Método   | Rota                       | Descrição            |
+| -------- | -------------------------- | -------------------- |
+| `GET`    | `/receivables`             | Listar todas         |
+| `GET`    | `/receivables/:id`         | Buscar por ID        |
+| `POST`   | `/receivables`             | Criar                |
+| `PUT`    | `/receivables/:id`         | Editar               |
+| `PATCH`  | `/receivables/:id/receive` | Marcar como recebido |
+| `DELETE` | `/receivables/:id`         | Excluir              |
 
 ### Dashboard e Câmbio
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/dashboard` | KPIs + dados dos 3 gráficos |
-| `GET` | `/exchange` | Cotação USD/BRL atual |
+| Método | Rota         | Descrição                   |
+| ------ | ------------ | --------------------------- |
+| `GET`  | `/dashboard` | KPIs + dados dos 3 gráficos |
+| `GET`  | `/exchange`  | Cotação USD/BRL atual       |
 
 ### Formato de erros
 
 ```json
 {
-    "message": "Conta a pagar com id 6fd2272a-cdb5-4f52-9ecd-2d0a1f290279 não encontrada",
-    "error": "Not Found",
-    "statusCode": 404
+  "message": "Conta a pagar com id 6fd2272a-cdb5-4f52-9ecd-2d0a1f290279 não encontrada",
+  "error": "Not Found",
+  "statusCode": 404
 }
 ```
+
 ---
 
 ## Validação de dados
@@ -315,37 +327,36 @@ O backend utiliza `class-validator` e `class-transformer` com `ValidationPipe` g
 
 **Contas a Pagar (`CreatePayableDto`)**
 
-| Campo | Tipo | Obrigatório | Regras |
-|-------|------|-------------|--------|
-| `supplier` | string | ✅ | Máx. 255 caracteres |
-| `amount` | number | ✅ | Positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
-| `dueDate` | date | ✅ | Data válida |
-| `category` | string | ❌ | Máx. 100 caracteres |
-| `description` | string | ❌ | Sem limite definido |
-| `status` | enum | ❌ | `PENDING` \| `PAID` — default `PENDING` |
+| Campo         | Tipo   | Obrigatório | Regras                                                |
+| ------------- | ------ | ----------- | ----------------------------------------------------- |
+| `supplier`    | string | ✅          | Máx. 255 caracteres                                   |
+| `amount`      | number | ✅          | Positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
+| `dueDate`     | date   | ✅          | Data válida                                           |
+| `category`    | string | ❌          | Máx. 100 caracteres                                   |
+| `description` | string | ❌          | Sem limite definido                                   |
+| `status`      | enum   | ❌          | `PENDING` \| `PAID` — default `PENDING`               |
 
 **Contas a Receber (`CreateReceivableDto`)**
 
-| Campo | Tipo | Obrigatório | Regras |
-|-------|------|-------------|--------|
-| `client` | string | ✅ | Máx. 255 caracteres |
-| `amount` | number | ✅ | Positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
-| `dueDate` | date | ✅ | Data válida |
-| `category` | string | ❌ | Máx. 100 caracteres |
-| `description` | string | ❌ | Sem limite definido |
-| `status` | enum | ❌ | `PENDING` \| `RECEIVED` — default `PENDING` |
+| Campo         | Tipo   | Obrigatório | Regras                                                |
+| ------------- | ------ | ----------- | ----------------------------------------------------- |
+| `client`      | string | ✅          | Máx. 255 caracteres                                   |
+| `amount`      | number | ✅          | Positivo, máx. 2 casas decimais, máx. `99.999.999,99` |
+| `dueDate`     | date   | ✅          | Data válida                                           |
+| `category`    | string | ❌          | Máx. 100 caracteres                                   |
+| `description` | string | ❌          | Sem limite definido                                   |
+| `status`      | enum   | ❌          | `PENDING` \| `RECEIVED` — default `PENDING`           |
 
 Exemplo de resposta para payload inválido (`400 Bad Request`):
+
 ```json
 {
-  "message": [
-    "Valor deve ser positivo",
-    "Data de vencimento é obrigatória"
-  ],
+  "message": ["Valor deve ser positivo", "Data de vencimento é obrigatória"],
   "error": "Bad Request",
   "statusCode": 400
 }
 ```
+
 ### Frontend
 
 O frontend utiliza **Zod** + **React Hook Form** para validação em tempo real antes do envio, com feedback visual por campo:
