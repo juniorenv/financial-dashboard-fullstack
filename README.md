@@ -75,7 +75,7 @@ A cotação do dólar é atualizada automaticamente a cada 30 segundos via integ
 - **5 KPIs:** Total a receber, Total a pagar, Total pendente, Saldo projetado (BRL + USD) e Saldo realizado
 - **Gráfico de barras:** Comparativo entre contas pagas/recebidas vs pendentes
 - **Gráfico de donut:** Distribuição por categoria (alternável entre a pagar e a receber)
-- **Gráfico de linha:** Fluxo de caixa mensal com receitas, despesas e saldo
+- **Gráfico de linha:** Fluxo de caixa mensal com duas visões — realizado (receitas recebidas e despesas pagas) e projetado (todas as contas independente de status).
 - Cotação USD/BRL atualizada automaticamente com timestamp da última busca
 
 ---
@@ -304,7 +304,7 @@ Base URL: `/api`
 
 | Método | Rota         | Descrição                   |
 | ------ | ------------ | --------------------------- |
-| `GET`  | `/dashboard` | KPIs + dados dos 3 gráficos |
+| `GET` | `/dashboard` | KPIs + dados dos 3 gráficos (fluxo de caixa com realizado e projetado) |
 | `GET`  | `/exchange`  | Cotação USD/BRL atual       |
 
 ### Formato de erros
