@@ -14,6 +14,7 @@ import type { Payable } from "@/schemas/payable.schema";
 import { CreatePayableDialog } from "#/components/payables/CreatePayableDialog";
 import { useEffect, useMemo, useState } from "react";
 import { EditPayableDialog } from "@/components/payables/EditPayableDialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export const Route = createFileRoute("/payables/")({
   component: PayablesPage,
@@ -27,6 +28,7 @@ function PayablesPage() {
 
   // ── Estado local ─────────────────────────────────────────────────────────
   const [editingPayable, setEditingPayable] = useState<Payable | null>(null);
+  const [deletingPayable, setDeletingPayable] = useState<Payable | null>(null);
   const [filterMonth, setFilterMonth] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'PENDING' | 'PAID'>('ALL');
 
@@ -217,7 +219,7 @@ function PayablesPage() {
                   key={item.id}
                   item={item}
                   onMarkAsPaid={() => markAsPaid.mutate(item.id)}
-                  onRemove={() => remove.mutate(item.id)}
+                  onRemove={() => setDeletingPayable(item)}
                   onEdit={() => setEditingPayable(item)}
                   isBusy={isGlobalBusy} // 4. Passa o estado global para desabilitar ações da linha
                 />
@@ -233,6 +235,22 @@ function PayablesPage() {
           onClose={() => setEditingPayable(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={!!deletingPayable}
+        onOpenChange={(open) => !open && setDeletingPayable(null)}
+        title="Excluir conta a pagar"
+        description={`Tem certeza que deseja excluir a conta de "${deletingPayable?.supplier}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          if (deletingPayable) {
+            remove.mutate(deletingPayable.id);
+          }
+        }}
+        isLoading={remove.isPending}
+      />
     </div>
   );
 }
