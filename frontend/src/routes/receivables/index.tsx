@@ -14,6 +14,7 @@ import type { Receivable } from "@/schemas/receivable.schema";
 import { CreateReceivableDialog } from "@/components/receivables/CreateReceivableDialog";
 import { useEffect, useMemo, useState } from "react";
 import { EditReceivableDialog } from "@/components/receivables/EditReceivableDialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export const Route = createFileRoute("/receivables/")({
   component: ReceivablesPage,
@@ -27,6 +28,7 @@ function ReceivablesPage() {
 
   // ── Estado local ─────────────────────────────────────────────────────────
   const [editingReceivable, setEditingReceivable] = useState<Receivable | null>(null);
+  const [deletingReceivable, setDeletingReceivable] = useState<Receivable | null>(null);
   const [filterMonth, setFilterMonth] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'PENDING' | 'RECEIVED'>('ALL');
 
@@ -215,7 +217,7 @@ function ReceivablesPage() {
                   key={item.id}
                   item={item}
                   onMarkAsReceived={() => markAsReceived.mutate(item.id)}
-                  onRemove={() => remove.mutate(item.id)}
+                  onRemove={() => setDeletingReceivable(item)}
                   onEdit={() => setEditingReceivable(item)}
                   isBusy={isGlobalBusy}
                 />
@@ -232,6 +234,22 @@ function ReceivablesPage() {
           onClose={() => setEditingReceivable(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={!!deletingReceivable}
+        onOpenChange={(open) => !open && setDeletingReceivable(null)}
+        title="Excluir conta a receber"
+        description={`Tem certeza que deseja excluir a conta de "${deletingReceivable?.client}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          if (deletingReceivable) {
+            remove.mutate(deletingReceivable.id);
+          }
+        }}
+        isLoading={remove.isPending}
+      />
     </div>
   );
 }
